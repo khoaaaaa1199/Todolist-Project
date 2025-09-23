@@ -34,13 +34,36 @@ const TaskCard = ({ task, index, handleTaskChanged }) => {
     }
   };
 
-    const updateTask = async () => {
+  const updateTask = async () => {
     try {
       setIsEditting(false);
       await api.put(`/tasks/${task._id}`, {
         title: updateTaskTitle,
       });
       toast.success(`Nhiệm vụ đã đổi thành ${updateTaskTitle}`);
+      handleTaskChanged();
+    } catch (error) {
+      console.error("Lỗi xảy ra khi update task.", error);
+      toast.error("Lỗi xảy ra khi cập nhập nhiệm vụ.");
+    }
+  };
+  const toggleTaskCompleteButton = async () => {
+    try {
+      if (task.status === "active") {
+        await api.put(`/tasks/${task._id}`, {
+          status: "complete",
+          completedAt: new Date().toISOString(),
+        });
+
+        toast.success(`${task.title} đã hoàn thành.`);
+      } else {
+        await api.put(`/tasks/${task._id}`, {
+          status: "active",
+          completedAt: null,
+        });
+        toast.success(`${task.title} đã đổi sang chưa hoàn thành.`);
+      }
+
       handleTaskChanged();
     } catch (error) {
       console.error("Lỗi xảy ra khi update task.", error);
@@ -67,6 +90,7 @@ const TaskCard = ({ task, index, handleTaskChanged }) => {
               ? "text-success hover:text-success/80"
               : "text-muted-foreground hover:text-primary"
           )}
+          onClick={toggleTaskCompleteButton}
         >
           {task.status === "complete" ? (
             <CheckCircle2 className="size-5" />
